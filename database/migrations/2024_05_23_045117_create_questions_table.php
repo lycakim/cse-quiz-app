@@ -16,6 +16,7 @@ return new class extends Migration
             $table->text('title');
             $table->text('description')->nullable();
             $table->string('sort')->nullable();
+            $table->string('image')->nullable();
             $table->json('options')->nullable();
             $table->foreignId('section_id')->nullable()->constrained('sections')->nullOnDelete();
             $table->timestamps();

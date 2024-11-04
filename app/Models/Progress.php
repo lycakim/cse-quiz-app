@@ -11,6 +11,10 @@ class Progress extends Model
     use HasFactory;
 
     protected $guarded = [];
+    
+    protected $casts = [
+        'response' => 'json',
+    ];
 
     public function section(): BelongsTo
     {
