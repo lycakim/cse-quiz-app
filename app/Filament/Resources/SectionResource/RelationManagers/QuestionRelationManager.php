@@ -3,12 +3,14 @@
 namespace App\Filament\Resources\SectionResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Livewire;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class QuestionRelationManager extends RelationManager
 {
@@ -26,6 +28,16 @@ class QuestionRelationManager extends RelationManager
                     
                 Forms\Components\Textarea::make('description')
                     ->columnSpanFull(),
+                
+                Forms\Components\FileUpload::make('image')
+                    ->columnSpanFull()
+                    ->image()
+                    ->disk('public') 
+                    ->directory('images')
+                    ->getUploadedFileNameForStorageUsing(function ($file) {
+                        return uniqid() . '.'. $file->getClientOriginalExtension();
+                    })
+                    ->label('Image'),
 
                 Forms\Components\Repeater::make('options')->schema([
                         Forms\Components\TextInput::make('title')

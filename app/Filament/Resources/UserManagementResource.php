@@ -26,7 +26,7 @@ class UserManagementResource extends Resource
 
     protected static ?string $slug = 'users-management';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 6;
 
     public static function canAccess(): bool
     {
@@ -45,11 +45,9 @@ class UserManagementResource extends Resource
                         ->required(),
                     TextInput::make('password')
                         ->password()
-                        ->required()
+                        ->revealable()
                         ->minLength(8)
-                        ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                        ->dehydrated(fn ($state) => filled($state))
-                        ->afterStateUpdated(fn ($state, $set) => $set('password', '')),
+                        ->required(fn (string $context): bool => $context === 'create'),
                     Select::make('role')
                         ->options([
                             'admin' => 'Admin',
@@ -67,7 +65,8 @@ class UserManagementResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')->searchable(),
-                TextColumn::make('email')->searchable()
+                TextColumn::make('email')->searchable(),
+                TextColumn::make('role')->searchable()
             ])
             ->filters([
                 //

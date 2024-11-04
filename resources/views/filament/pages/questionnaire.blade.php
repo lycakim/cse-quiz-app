@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    <div style="margin-top: -50px">
+    <div style="margin-top: -75px">
         <div class="flex justify-between gap-2 mb-2">
             <div> </div>
             <div class="flex items-center mb-5 gap-2">
@@ -47,7 +47,7 @@
         <div
             class="fi-modal-footer-actions gap-3 flex flex-col-reverse sm:grid sm:grid-cols-[repeat(auto-fit,minmax(0,1fr))]">
             <x-filament::button color="gray" outlined size="lg"
-                x-on:click.prevent="$dispatch('close-modal', {id: 'view-results'}); window.location.reload()">
+                x-on:click.prevent="$dispatch('close-modal', {id: 'view-results'}); window.location.replace('/app/progress')">
                 Cancel
             </x-filament::button>
             <x-filament::button size="lg" x-on:click.prevent="window.location.reload()">

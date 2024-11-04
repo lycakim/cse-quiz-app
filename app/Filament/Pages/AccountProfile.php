@@ -2,13 +2,15 @@
 
 namespace App\Filament\Pages;
 
+use Closure;
 use App\Models\User;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Get;
 use Filament\Forms\Form;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 
 class AccountProfile extends Page
 {
@@ -34,18 +36,53 @@ class AccountProfile extends Page
     {
         return $form
             ->schema([
-                Section::make('Information')
+                Section::make('Personal Information')
+                    ->description("Update your account's profile information and email address.")
                     ->schema([
                         TextInput::make('name'),
                         TextInput::make('email'),
-                        TextInput::make('password')
-                            ->password()
-                            ->minLength(8)
-                            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                            ->dehydrated(fn ($state) => filled($state))
-                            ->afterStateUpdated(fn ($state, $set) => $set('password', '')),
                     ])
                     ->columns(2),
+                Section::make('Update Password')
+                    ->description('Ensure your account is using a long, random password to stay secure.')
+                    ->schema([
+                        TextInput::make('old_password')
+                        ->password()
+                        ->required()
+                        ->minLength(8)
+                        ->revealable()
+                        ->rules([
+                            fn (): Closure => function (string $attribute, $value, Closure $fail) {
+                                if (!Hash::check($value, auth()->user()->password)) {
+                                    $fail('The :attribute is incorrect.');
+                                }
+                            },
+                        ])
+                        ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                        ->dehydrated(fn ($state) => filled($state)),
+                    TextInput::make('new_password')
+                        ->password()
+                        ->required()
+                        ->minLength(8)
+                        ->rules([
+                            fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                if ($value !== $get('confirm_password')) {
+                                    $fail('The :attribute confirmation does not match.');
+                                }
+                            },
+                        ])
+                        ->revealable()
+                        ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                        ->dehydrated(fn ($state) => filled($state)),
+                    TextInput::make('confirm_password')
+                        ->label('Confirm Password')
+                        ->password()
+                        ->required()
+                        ->minLength(8)
+                        ->revealable()
+                        ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                        ->dehydrated(fn ($state) => filled($state)),
+                ])
             ])
             ->statePath('data')
             ->model(User::class);
@@ -61,11 +98,13 @@ class AccountProfile extends Page
 
         $user->email = $data['email'];
 
-        if (isset($data['password'])) {
-            $user->password = $data['password'];
+        if (isset($data['new_password'])) {
+            $user->password = $data['new_password'];
         }
 
         $user->save();
+        
+        // $this->reset(['data.old_password', 'data.new_password', 'data.confirm_password']);
 
         session()->put([
             'password_hash_'.auth()->getDefaultDriver() => $user->getAuthPassword(),

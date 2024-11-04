@@ -1,1 +1,1 @@
-<pre style="margin-bottom: -20px;">{{ $desc }}</pre]>
+<pre class="my-2">{{ $desc }}</pre>
