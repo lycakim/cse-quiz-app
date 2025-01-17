@@ -13,6 +13,7 @@ use Filament\Forms\Components\Wizard;
 use Illuminate\Support\Facades\Blade;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\ViewField;
+use Filament\Notifications\Notification;
 use App\Models\Progress as ModelProgress;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -52,26 +53,26 @@ class Questionnaire extends Page implements HasForms
     public function form(Form $form): Form
     {
         $steps = $this->questions->map(function ($question, $key) {
-                return Wizard\Step::make($question->id)
-                    ->label(false)
-                    ->schema([
-                        Placeholder::make($question->id)
-                            ->label(false)
-                            ->content($question->title),
-                        Placeholder::make($question->id)
-                            ->label(false)
-                            ->visible(fn () => $question && $question->description)
-                            ->view('question-description', ['desc' => $question->description]),
-                        ViewField::make('image_preview')
-                            ->view('image-display', ['record' => $question])
-                            ->visible(fn () => $question && $question->image),
-                        Radio::make($question->id)
-                            ->label(false)
-                            ->inline(false)
-                            ->required()
-                            ->inlineLabel(false)
-                            ->options($this->getOptions($question->id))
-                    ]);
+            return Wizard\Step::make($question->id)
+                ->label(false)
+                ->schema([
+                    Placeholder::make($question->id)
+                        ->label(false)
+                        ->content($question->title),
+                    Placeholder::make($question->id)
+                        ->label(false)
+                        ->visible(fn () => $question && $question->description)
+                        ->view('question-description', ['desc' => $question->description]),
+                    ViewField::make('image_preview')
+                        ->view('image-display', ['record' => $question])
+                        ->visible(fn () => $question && $question->image),
+                    Radio::make($question->id)
+                        ->label(false)
+                        ->inline(false)
+                        ->required()
+                        ->inlineLabel(false)
+                        ->options($this->getOptions($question->id))
+                ]);
         });
 
         return $form
@@ -166,6 +167,14 @@ class Questionnaire extends Page implements HasForms
             'score' => $score .'/'.count($this->answers),
             'response' => $all
         ]);
-        $this->dispatch('open-modal', id: 'view-results');
+
+        $this->questions->shuffle();
+        
+        Notification::make()
+            ->title('Score saved successfully')
+            ->body('You scored '.$score.' out of '.count($this->answers).' correct answers')
+            ->success()
+            ->send();
+        // $this->dispatch('open-modal', id: 'view-results');
     }
 }
