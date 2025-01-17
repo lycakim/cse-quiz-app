@@ -66,7 +66,7 @@ class QuestionRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make()->modalHeading('Create Question'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->modalHeading('Edit Question'),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
